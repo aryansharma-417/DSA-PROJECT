@@ -1,0 +1,141 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 100
+
+typedef struct Task {
+    char description[MAX];
+    int isDone; // 0 = Not Done, 1 = Done
+    struct Task* next;
+} Task;
+
+Task* head = NULL;
+
+Task* createTask(char desc[]) {
+    Task* newTask = (Task*)malloc(sizeof(Task));
+    strcpy(newTask->description, desc);
+    newTask->isDone = 0;
+    newTask->next = NULL;
+    return newTask;
+}
+
+void addTask(char desc[]) {
+    Task* newTask = createTask(desc);
+    if (head == NULL) {
+        head = newTask;
+    } else {
+        Task* temp = head;
+        while (temp->next != NULL)
+            temp = temp->next;
+        temp->next = newTask;
+    }
+    printf("✅ Task added successfully!\n");
+}
+
+void viewTasks() {
+    if (head == NULL) {
+        printf("📭 No tasks to show!\n");
+        return;
+    }
+    Task* temp = head;
+    int index = 1;
+    printf("\n📝 To-Do List:\n");
+    while (temp != NULL) {
+        printf("%d. [%s] %s\n", index, temp->isDone ? "Done" : "Not Done", temp->description);
+        temp = temp->next;
+        index++;
+    }
+}
+
+void deleteTask(int pos) {
+    if (head == NULL) {
+        printf("❌ List is empty.\n");
+        return;
+    }
+
+    Task* temp = head;
+
+    if (pos == 1) {
+        head = head->next;
+        free(temp);
+        printf("🗑 Task deleted.\n");
+        return;
+    }
+
+    for (int i = 1; temp != NULL && i < pos - 1; i++) {
+        temp = temp->next;
+    }
+
+    if (temp == NULL || temp->next == NULL) {
+        printf("❌ Invalid position.\n");
+        return;
+    }
+
+    Task* next = temp->next->next;
+    free(temp->next);
+    temp->next = next;
+    printf("🗑 Task deleted.\n");
+}
+
+void markAsDone(int pos) {
+    Task* temp = head;
+    int count = 1;
+    while (temp != NULL && count < pos) {
+        temp = temp->next;
+        count++;
+    }
+
+    if (temp == NULL) {
+        printf("❌ Invalid position.\n");
+    } else {
+        temp->isDone = 1;
+        printf("✅ Task marked as done!\n");
+    }
+}
+
+int main() {
+    int choice, pos;
+    char desc[MAX];
+
+    while (1) {
+        printf("\n=== TO-DO LIST MENU ===\n");
+        printf("1. Add Task\n");
+        printf("2. View Tasks\n");
+        printf("3. Delete Task\n");
+        printf("4. Mark Task as Done\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar(); // consume newline
+
+        switch (choice) {
+            case 1:
+                printf("Enter task description: ");
+                fgets(desc, MAX, stdin);
+                desc[strcspn(desc, "\n")] = 0; // remove newline
+                addTask(desc);
+                break;
+            case 2:
+                viewTasks();
+                break;
+            case 3:
+                printf("Enter position of task to delete: ");
+                scanf("%d", &pos);
+                deleteTask(pos);
+                break;
+            case 4:
+                printf("Enter position of task to mark as done: ");
+                scanf("%d", &pos);
+                markAsDone(pos);
+                break;
+            case 5:
+                printf("👋 Exiting... Goodbye!\n");
+                exit(0);
+            default:
+                printf("❌ Invalid choice. Try again.\n");
+        }
+    }
+
+    return 0;
+}
